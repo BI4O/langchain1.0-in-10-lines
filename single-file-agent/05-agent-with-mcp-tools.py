@@ -1,0 +1,42 @@
+from langchain.agents import create_agent
+from langchain_openai import ChatOpenAI
+from langchain_core.tools import tool
+from dotenv import load_dotenv
+
+# * new mcp
+from langchain_mcp_adapters.client import MultiServerMCPClient
+
+# set OPENAI_API_KEY、OPENAI_BASE_URL environment variables before running
+load_dotenv()
+
+mcp_client = MultiServerMCPClient(
+            {
+                "time": {
+                    "transport": "stdio",
+                    "command": "npx",
+                    "args": ["-y", "@theo.foobar/mcp-time"],
+                }
+            },
+        )
+
+# initialize llm
+llm = ChatOpenAI(model="kimi-k2")
+
+if __name__ == "__main__":
+    import asyncio
+
+    async def main():
+        # Initialize MCP tools and agent in async context
+        mcp_tools = await mcp_client.get_tools()
+
+        agent = create_agent(
+            model=llm,
+            tools=mcp_tools,
+            system_prompt="You are a helpful assistant."
+        )
+
+        question = "What time is it in Tokyo right now?"
+        async for msg in agent.astream({"messages": question}, stream_mode="values"):
+            msg["messages"][-1].pretty_print()
+
+    asyncio.run(main())

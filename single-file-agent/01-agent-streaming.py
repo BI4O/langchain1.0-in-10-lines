@@ -10,9 +10,11 @@ llm = ChatOpenAI(model="kimi-k2")
 agent = create_agent(model=llm,system_prompt="You are a helpful assistant.")
 
 if __name__ == "__main__":
+    # chose one of these streaming modes to uncomment to run ~
+
     # 1. streaming by values(HumanMessage, AIMessage, ToolMessage)
-    for chunk in agent.stream({"messages":"Hello! Who are you?"}, stream_mode="values"):
-        chunk["messages"][-1].pretty_print()
+    # for chunk in agent.stream({"messages":"Hello! Who are you?"}, stream_mode="values"):
+    #     chunk["messages"][-1].pretty_print()
 
     """
     ================================ Human Message =================================
@@ -21,4 +23,11 @@ if __name__ == "__main__":
     ================================== Ai Message ==================================
 
     Hello! I'm Kimi, your AI assistant from Moonshot AI. 
+    """
+
+    # 2. streaming by tokens
+    for token,metadata in agent.stream({"messages":"Hello! Who are you?"}, stream_mode="messages"):
+        print(token.content, end="", flush=True)
+
+    """Hello! I'm Kimi, your AI assistant from Moonshot AI.
     """
