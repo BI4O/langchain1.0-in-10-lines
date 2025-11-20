@@ -21,8 +21,7 @@ agent = create_agent(
 )
 
 if __name__ == "__main__":
-    res = agent.invoke({"messages":"Hello! I am Neo not Len, and call me on one O one, seven eight night"})
-    # print(res["messages"][-1].content)
-    print(res["structured_response"])
+    state = agent.invoke({"messages":"Hello! I am Neo not Len, and call me on one O one, seven eight night"})
+    print(state["structured_response"])
 
     """{'name': 'Neo', 'phone': 101789}"""

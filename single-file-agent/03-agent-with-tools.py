@@ -22,12 +22,12 @@ agent = create_agent(
 
 if __name__ == "__main__":
     # use stream mode to see tool usage in action
-    for chunk in agent.stream(
+    for state in agent.stream(
         {"messages":"What's the weather like in Shanghai?"},
         stream_mode="values"
     ):
-        msg = chunk["messages"][-1]
-        msg.pretty_print()
+        latest_msg = state["messages"][-1]
+        latest_msg.pretty_print()
 
     """
 ================================ Human Message =================================

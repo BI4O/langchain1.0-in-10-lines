@@ -35,12 +35,12 @@ agent = create_agent(
 if __name__ == "__main__":
     # actually is 1006 but agent will use the tool and get 1008
     # because I added description that forces it to use the tool
-    for chunk in agent.stream(
+    for state in agent.stream(
         {"messages":"What is 1001 + 2 + 3?"},
         stream_mode="values"
     ):
-        msg = chunk["messages"][-1]
-        msg.pretty_print()
+        latest_msg = state["messages"][-1]
+        latest_msg.pretty_print()
 
     """
 ================================ Human Message =================================

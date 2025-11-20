@@ -10,7 +10,7 @@ llm = ChatOpenAI(model="kimi-k2")
 agent = create_agent(model=llm,system_prompt="You are a helpful assistant.")
 
 if __name__ == "__main__":
-    res = agent.invoke({"messages":"Hello! Who are you?"})
-    print(res["messages"][-1].content)
+    state = agent.invoke({"messages":"Hello! Who are you?"})
+    print(state["messages"][-1].content)
 
     """Hello! I'm Kimi, your AI assistant from Moonshot AI."""

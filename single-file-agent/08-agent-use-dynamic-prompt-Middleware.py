@@ -54,12 +54,13 @@ agent = create_agent(
 )
 
 if __name__ == "__main__":
-    for msg in agent.stream(
+    for state in agent.stream(
         {"messages":"what is the weather in ShenZhen?"},
         stream_mode="values",
         context=RuntimeContext(islogin=False, name="Neo")
     ):
-        msg["messages"][-1].pretty_print()
+        latest_msg = state["messages"][-1]
+        latest_msg.pretty_print()
 
 """
 ================================ Human Message =================================

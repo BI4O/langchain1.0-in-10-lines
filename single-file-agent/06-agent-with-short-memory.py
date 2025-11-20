@@ -20,9 +20,9 @@ config = {"configurable":{"thread_id":"1"}}
 
 if __name__ == "__main__":
     agent.invoke({"messages":"Hello! My name is Neo"}, config=config)
-    res = agent.invoke({"messages":"Who am I?"}, config=config)
-    for i in res["messages"]:
-        i.pretty_print()
+    state = agent.invoke({"messages":"Who am I?"}, config=config)
+    for msg in state["messages"]:
+        msg.pretty_print()
 
 """
 ================================ Human Message =================================

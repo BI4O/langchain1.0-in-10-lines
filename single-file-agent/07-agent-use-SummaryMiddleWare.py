@@ -29,10 +29,10 @@ if __name__ == "__main__":
     agent.invoke({"messages": "hi, my name is bob"}, config)
     agent.invoke({"messages": "write a short poem about cats"}, config)
     agent.invoke({"messages": "now do the same but for dogs"}, config)
-    res = agent.invoke({"messages": "what's my name?"}, config)
+    state = agent.invoke({"messages": "what's my name?"}, config)
 
-    for i in res["messages"]:
-        i.pretty_print()
+    for msg in state["messages"]:
+        msg.pretty_print()
 """
 ================================ Human Message =================================
 
