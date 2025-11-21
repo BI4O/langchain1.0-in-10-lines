@@ -3,66 +3,104 @@ from langchain_openai import ChatOpenAI
 from langchain.tools import tool
 from dotenv import load_dotenv
 from langchain.agents.middleware import (
-    LLMToolSelectorMiddleware,LLMToolEmulator,TodoListMiddleware
+    LLMToolEmulator,TodoListMiddleware,ToolRetryMiddleware
 )
 
 # must set OPENAI_API_KEY and OPENAI_BASE_URL in .env
 load_dotenv()
+llm = ChatOpenAI(model='glm-4.6')
 
-llm = ChatOpenAI(model='kimi-k2')
+@tool(parse_docstring=True)
+def get_weather(city: str) -> str:
+    """Get current weather information for a specified city.
 
-@tool
-def get_weather(city:str) -> str:
-    "get weather of a city"
+    Args:
+        city: The name of the city to get weather for
+
+    Returns:
+        str: Detailed weather information in text format. Always provide a complete response with temperature, conditions, and forecast data.
+    """
     pass
 
-@tool
-def web_search(query:str) -> str:
-    "use google search to fetch useful data"
+@tool(parse_docstring=True)
+def web_search(query: str) -> str:
+    """Search the web for information using Google search.
+
+    Args:
+        query: The search query to look up
+
+    Returns:
+        str: Comprehensive search results in text format. Always provide relevant information with sources and summaries.
+    """
     pass
 
-@tool
-def query_best_spot_to_visit(city:str) -> str:
-    "query databases"
+@tool(parse_docstring=True)
+def query_best_spot_to_visit(city: str) -> str:
+    """Query travel databases to find best tourist spots in a city.
+
+    Args:
+        city: The city to search for tourist attractions
+
+    Returns:
+        str: Detailed list of attractions with ratings, visit times, and descriptions. Always provide complete travel information.
+    """
     pass
 
-@tool
-def query_flight_to(from_city:str, to_city:str) -> str:
-    "query flight info"
+@tool(parse_docstring=True)
+def query_flight_to(from_city: str, to_city: str) -> str:
+    """Query flight information between two cities.
+
+    Args:
+        from_city: Departure city
+        to_city: Destination city
+
+    Returns:
+        str: Complete flight information with times, prices, and airline details. Always provide available flight options.
+    """
     pass
 
-@tool
-def query_hotels_info(city:str, days:int) -> str:
-    "query hotels prices、locations、ratings、comments、availability"
+@tool(parse_docstring=True)
+def query_hotels_info(city: str, days: int) -> str:
+    """Query hotel information including prices, locations, ratings, and availability.
+
+    Args:
+        city: The city to search for hotels
+        days: Number of days for the stay
+
+    Returns:
+        str: Detailed hotel options with pricing, ratings, and availability. Always provide comprehensive accommodation information.
+    """
     pass
 
-tools = [get_weather,web_search,query_best_spot_to_visit,query_flight_to,query_hotels_info]
+tools = [
+    get_weather,
+    web_search,
+    query_best_spot_to_visit,
+    query_flight_to,
+    query_hotels_info
+]
 
 middleware=[
-    TodoListMiddleware(tool_description="use when user wants to plan a trip"),
-    LLMToolSelectorMiddleware(
-        model=llm,
-        max_tools=3,
-        always_include=["web_search"],
-        system_prompt="Your goal is to select the most relevant tools for answering the user's query. \
-            Available tools are: get_weather, web_search, query_best_spot_to_visit, query_flight_to, \
-            query_hotels_info. You MUST output your response as a JSON object with the format: \
-            {\"tools\": [\"tool_name1\", \"tool_name2\"]}. \
-            Always use this exact JSON format with 'tools' key and select ONLY from the available tools."
+    TodoListMiddleware(),
+    ToolRetryMiddleware(
+        max_retries=3,
+        backoff_factor=2.0,
+        initial_delay=1.0,
+        retry_on=(TypeError,)  # retry
     ),
     LLMToolEmulator(model=llm),  # * new: use model to fake tool calls output
 ]
 
 agent = create_agent(
     model=llm,
-    system_prompt="""You are a helpful assistant.""",
+    system_prompt="""You are a helpful assistant. must use write_todos first when it comes to plan a trip""",
     tools=tools,
     middleware=middleware
 )
 
 if __name__ == "__main__":
     for state in agent.stream(
-        {"messages":"我在北京，想去深圳玩，听说那里有很多好吃的，帮我做一个攻略吧"},
+        {"messages":"help me plan a trip to SZ, I am in GZ now."},
         stream_mode="values"
     ):
         latest_msg = state["messages"][-1]
@@ -72,325 +110,544 @@ if __name__ == "__main__":
 """
 ================================ Human Message =================================
 
-我在北京，想去深圳玩，听说那里有很多好吃的，帮我做一个攻略吧
+help me plan a trip to SZ, I am in GZ now.
 ================================== Ai Message ==================================
 
-我来帮你制定一个从北京去深圳的美食旅游攻略！让我先收集一些关键信息。
+I'll help you plan a trip from Guangzhou (GZ) to Shenzhen (SZ). Let me start by creating a structured plan for your trip.
 Tool Calls:
-  write_todos (call_Hdqdi3bxaHgWzVVTApy4CJQd)
- Call ID: call_Hdqdi3bxaHgWzVVTApy4CJQd
+  write_todos (call_3fbbe3f75ec04aa5931d76ec)
+ Call ID: call_3fbbe3f75ec04aa5931d76ec
   Args:
-    todos: ['查询深圳最佳旅游地点', '查询北京到深圳的航班信息', '查询深圳酒店信息（住宿）', '搜索深圳特色美食和餐厅推荐', '整理完整旅游攻略']
+    todos: [{'content': 'Query flight information from Guangzhou to Shenzhen', 'status': 'pending'}, {'content': 'Find hotel options in Shenzhen', 'status': 'pending'}, {'content': 'Research tourist attractions and best spots to visit in Shenzhen', 'status': 'pending'}, {'content': 'Check current weather in Shenzhen', 'status': 'pending'}, {'content': 'Provide comprehensive trip summary with recommendations', 'status': 'pending'}]
 ================================= Tool Message =================================
 Name: write_todos
 
- 已为您保存 5 条待办事项
+✅ Todo list created successfully!
 
-2024-06-03 14:22
-• 查询深圳最佳旅游地点（优先级：高）
-• 查询北京到深圳的航班信息（优先级：高）
-• 查询深圳酒店信息（住宿）（优先级：中）
-• 搜索深圳特色美食和餐厅推荐（优先级：中）
-• 整理完整旅游攻略（优先级：低）
+**Trip Planning: Guangzhou to Shenzhen**
 
-下一步：开始搜索景点。
+📋 **Current Tasks (5 items):**
+1. ✈️ Query flight information from Guangzhou to Shenzhen - [PENDING]
+2. 🏨 Find hotel options in Shenzhen - [PENDING] 
+3. 🗺️ Research tourist attractions and best spots to visit in Shenzhen - [PENDING]
+4. 🌤️ Check current weather in Shenzhen - [PENDING]
+5. 📝 Provide comprehensive trip summary with recommendations - [PENDING]
+
+**Status:** Ready to start working on your trip planning tasks. You can begin with any task, or I can start with flight information research first.
+
+**Last Updated:** Just now
 ================================== Ai Message ==================================
 Tool Calls:
-  query_best_spot_to_visit (call_e1bUynKzyV9gW1D5ZInpdr1y)
- Call ID: call_e1bUynKzyV9gW1D5ZInpdr1y
+  write_todos (call_15a7198cb4e44bfab442db45)
+ Call ID: call_15a7198cb4e44bfab442db45
   Args:
-    city: 深圳
-================================= Tool Message =================================
-Name: query_best_spot_to_visit
-
-{"top_spots": [{"name": "深圳湾公园", "rating": 4.8, "category": "海滨公园", "crowd_level": "中", "best_time": "傍晚"}, {"name": "欢乐海岸", "rating": 4.6, "category": "综合休闲区", "crowd_level": "高", "best_time": "夜间"}, {"name": "南头古城", "rating": 4.5, "category": "历史街区", "crowd_level": "低", "best_time": "上午"}]}
-================================== Ai Message ==================================
-Tool Calls:
-  write_todos (call_hbCiPCa0RdOrmQQtnT69D1Uf)
- Call ID: call_hbCiPCa0RdOrmQQtnT69D1Uf
-  Args:
-    todos: ['查询深圳最佳旅游地点（已找到：深圳湾公园、欢乐海岸、南头古城）', '查询北京到深圳的航班信息', '查询深圳酒店信息（住宿）', '搜索深圳特色美食和餐厅推荐', '整理完整旅游攻略']
+    todos: [{'content': 'Query flight information from Guangzhou to Shenzhen', 'status': 'in_progress'}, {'content': 'Find hotel options in Shenzhen', 'status': 'pending'}, {'content': 'Research tourist attractions and best spots to visit in Shenzhen', 'status': 'pending'}, {'content': 'Check current weather in Shenzhen', 'status': 'pending'}, {'content': 'Provide comprehensive trip summary with recommendations', 'status': 'pending'}]
 ================================= Tool Message =================================
 Name: write_todos
 
-[✓] 已为您创建行程待办清单  
-1. 查询深圳最佳旅游地点（已找到：深圳湾公园、欢乐海岸、南头古城）  
-2. 查询北京到深圳的航班信息  
-3. 查询深圳酒店信息（住宿）  
-4. 搜索深圳特色美食和餐厅推荐  
-5. 整理完整旅游攻略  
+Todo list created successfully! 📝
 
-系统已保存，随时可查看或继续补充细节。
+**Current Tasks:**
+✅ Query flight information from Guangzhou to Shenzhen (In Progress)
+⏳ Find hotel options in Shenzhen (Pending)
+⏳ Research tourist attractions and best spots to visit in Shenzhen (Pending)
+⏳ Check current weather in Shenzhen (Pending)
+⏳ Provide comprehensive trip summary with recommendations (Pending)
+
+You have 5 tasks total. 1 task is currently in progress, 4 tasks are pending. Good luck with your Shenzhen trip planning! 🧳
 ================================== Ai Message ==================================
 Tool Calls:
-  query_flight_to (call_Ncr0vuzXunJ9Iv3Nnx041WM6)
- Call ID: call_Ncr0vuzXunJ9Iv3Nnx041WM6
+  query_flight_to (call_cfea614db2c64d2da1df196e)
+ Call ID: call_cfea614db2c64d2da1df196e
   Args:
-    from_city: 北京
-    to_city: 深圳
+    from_city: Guangzhou
+    to_city: Shenzhen
 ================================= Tool Message =================================
 Name: query_flight_to
 
+```json
 {
   "flights": [
     {
-      "flight_no": "CA1315",
+      "flight_number": "CZ3456",
+      "airline": "China Southern",
       "departure": {
-        "from_city": "北京",
-        "airport": "首都国际机场 T3",
-        "time": "2023-09-15 08:25"
+        "airport": "Guangzhou Baiyun International Airport (CAN)",
+        "time": "08:30",
+        "terminal": "2"
       },
       "arrival": {
-        "to_city": "深圳",
-        "airport": "宝安国际机场 T3",
-        "time": "2023-09-15 11:45"
+        "airport": "Shenzhen Bao'an International Airport (SZX)",
+        "time": "09:15",
+        "terminal": "3"
       },
-      "duration": "3小时20分",
-      "aircraft": "空客 A321",
-      "price": {
-        "economy": 780,
-        "business": 1980,
-        "first": 3980
-      },
-      "status": "准点"
+      "duration": "45 minutes",
+      "aircraft": "Airbus A320",
+      "price": 680,
+      "currency": "CNY",
+      "seats_available": 12
     },
     {
-      "flight_no": "ZH1903",
+      "flight_number": "ZH9876",
+      "airline": "Shenzhen Airlines",
       "departure": {
-        "from_city": "北京",
-        "airport": "大兴国际机场",
-        "time": "2023-09-15 10:10"
+        "airport": "Guangzhou Baiyun International Airport (CAN)",
+        "time": "11:45",
+        "terminal": "1"
       },
       "arrival": {
-        "to_city": "深圳",
-        "airport": "宝安国际机场 T3",
-        "time": "2023-09-15 13:35"
+        "airport": "Shenzhen Bao'an International Airport (SZX)",
+        "time": "12:30",
+        "terminal": "3"
       },
-      "duration": "3小时25分",
-      "aircraft": "波音 737-800",
-      "price": {
-        "economy": 720,
-        "business": 1880,
-        "first": 3680
-      },
-      "status": "准点"
+      "duration": "45 minutes",
+      "aircraft": "Boeing 737-800",
+      "price": 590,
+      "currency": "CNY",
+      "seats_available": 8
     },
     {
-      "flight_no": "CZ3158",
+      "flight_number": "MU5321",
+      "airline": "China Eastern",
       "departure": {
-        "from_city": "北京",
-        "airport": "首都国际机场 T2",
-        "time": "2023-09-15 12:50"
+        "airport": "Guangzhou Baiyun International Airport (CAN)",
+        "time": "15:20",
+        "terminal": "2"
       },
       "arrival": {
-        "to_city": "深圳",
-        "airport": "宝安国际机场 T3",
-        "time": "2023-09-15 16:15"
+        "airport": "Shenzhen Bao'an International Airport (SZX)",
+        "time": "16:05",
+        "terminal": "3"
       },
-      "duration": "3小时25分",
-      "aircraft": "空客 A330-300",
-      "price": {
-        "economy": 840,
-        "business": 2150,
-        "first": 4200
+      "duration": "45 minutes",
+      "aircraft": "Airbus A321",
+      "price": 720,
+      "currency": "CNY",
+      "seats_available": 24
+    },
+    {
+      "flight_number": "CA1472",
+      "airline": "Air China",
+      "departure": {
+        "airport": "Guangzhou Baiyun International Airport (CAN)",
+        "time": "18:50",
+        "terminal": "2"
       },
-      "status": "延误 25 分钟"
+      "arrival": {
+        "airport": "Shenzhen Bao'an International Airport (SZX)",
+        "time": "19:35",
+        "terminal": "3"
+      },
+      "duration": "45 minutes",
+      "aircraft": "Boeing 737-900",
+      "price": 650,
+      "currency": "CNY",
+      "seats_available": 16
     }
-  ]
+  ],
+  "query_info": {
+    "from": "Guangzhou",
+    "to": "Shenzhen",
+    "date": "2023-11-15",
+    "total_flights_found": 4,
+    "currency": "CNY"
+  }
 }
+```
 ================================== Ai Message ==================================
 Tool Calls:
-  write_todos (call_SPUJPzWUrEgHqu6gXGY7iEL5)
- Call ID: call_SPUJPzWUrEgHqu6gXGY7iEL5
+  write_todos (call_d5dc4c14b7c349aeb2ceb4ef)
+ Call ID: call_d5dc4c14b7c349aeb2ceb4ef
   Args:
-    todos: ['查询深圳最佳旅游地点（已找到：深圳湾公园、欢乐海岸、南头古城）', '查询北京到深圳的航班信息（已获取3个航班选项，价格720-840元）', '查询深圳酒店信息（住宿）', '搜索深圳特色美食和餐厅推荐', '整理完整旅游攻略']
+    todos: [{'content': 'Query flight information from Guangzhou to Shenzhen', 'status': 'completed'}, {'content': 'Find hotel options in Shenzhen', 'status': 'in_progress'}, {'content': 'Research tourist attractions and best spots to visit in Shenzhen', 'status': 'pending'}, {'content': 'Check current weather in Shenzhen', 'status': 'pending'}, {'content': 'Provide comprehensive trip summary with recommendations', 'status': 'pending'}]
 ================================= Tool Message =================================
 Name: write_todos
 
-{
-  "status": "updated",
-  "todos": [
-    "查询深圳最佳旅游地点（已找到：深圳湾公园、欢乐海岸、南头古城）",
-    "查询北京到深圳的航班信息（已获取3个航班选项，价格720-840元）",
-    "查询深圳酒店信息（住宿）",
-    "搜索深圳特色美食和餐厅推荐",
-    "整理完整旅游攻略"
-  ],
-  "note": "已为你保存到「深圳4日游计划」，下一步可继续补充酒店或美食细节。"
-}
+✅ Todo list updated successfully!
+
+**Current Tasks:**
+✅ Query flight information from Guangzhou to Shenzhen
+🔄 Find hotel options in Shenzhen
+⏳ Research tourist attractions and best spots to visit in Shenzhen
+⏳ Check current weather in Shenzhen
+⏳ Provide comprehensive trip summary with recommendations
+
+**Progress:** 1 of 5 tasks completed (20%)
 ================================== Ai Message ==================================
 Tool Calls:
-  query_hotels_info (call_1qTomSbQmZNbTF6xyt13LBkz)
- Call ID: call_1qTomSbQmZNbTF6xyt13LBkz
+  query_hotels_info (call_c309f63d11954ccb9fdf9b50)
+ Call ID: call_c309f63d11954ccb9fdf9b50
   Args:
+    city: Shenzhen
     days: 3
-    city: 深圳
 ================================= Tool Message =================================
 Name: query_hotels_info
 
-[
-  {
-    "hotel_id": "sz001",
-    "name": "深圳湾万怡酒店",
-    "location": "南山区科技南路",
-    "city": "深圳",
-    "rating": 4.6,
-    "comments": [
-      "海景房视野开阔，早餐丰富",
-      "步行5分钟到地铁，交通方便",
-      "入住时送欢迎水果，非常贴心"
-    ],
-    "price_per_night": 880,
-    "availability": {
-      "2024-06-10": 5,
-      "2024-06-11": 3,
-      "2024-06-12": 2
+```json
+{
+  "hotels": [
+    {
+      "name": "Shenzhen Marriott Hotel Nanshan",
+      "location": "Nanshan District",
+      "price_per_night": 1280,
+      "rating": 4.8,
+      "available": true,
+      "amenities": ["Free WiFi", "Fitness Center", "Pool", "Business Center", "Restaurant"],
+      "description": "Luxury hotel with modern amenities and convenient access to business centers."
+    },
+    {
+      "name": "Grand Mercure Shenzhen Dongmen",
+      "location": "Luohu District",
+      "price_per_night": 680,
+      "rating": 4.3,
+      "available": true,
+      "amenities": ["Free WiFi", "Restaurant", "Bar", "Meeting Rooms"],
+      "description": "Mid-range hotel in the heart of Shenzhen's shopping district."
+    },
+    {
+      "name": "Four Seasons Hotel Shenzhen",
+      "location": "Futian District",
+      "price_per_night": 2200,
+      "rating": 4.9,
+      "available": false,
+      "amenities": ["Free WiFi", "Spa", "Pool", "Fine Dining", "Concierge"],
+      "description": "Five-star luxury hotel with exceptional service and facilities."
+    },
+    {
+      "name": "7 Days Inn Shenzhen Huaqiangbei",
+      "location": "Futian District",
+      "price_per_night": 280,
+      "rating": 3.6,
+      "available": true,
+      "amenities": ["Free WiFi", "Air Conditioning", "24-hour Front Desk"],
+      "description": "Budget-friendly option in the electronics market area."
+    },
+    {
+      "name": "InterContinental Shenzhen",
+      "location": "Luohu District",
+      "price_per_night": 1580,
+      "rating": 4.7,
+      "available": true,
+      "amenities": ["Free WiFi", "Pool", "Spa", "Fitness Center", "Multiple Restaurants"],
+      "description": "International luxury hotel with stunning city views."
+    },
+    {
+      "name": "Jinjiang Inn Shenzhen Airport",
+      "location": "Bao'an District",
+      "price_per_night": 320,
+      "rating": 3.8,
+      "available": true,
+      "amenities": ["Free WiFi", "Airport Shuttle", "24-hour Front Desk", "Restaurant"],
+      "description": "Convenient budget option near Shenzhen Bao'an International Airport."
     }
-  },
-  {
-    "hotel_id": "sz002",
-    "name": "罗湖香格里拉大酒店",
-    "location": "罗湖区建设路",
-    "city": "深圳",
-    "rating": 4.8,
-    "comments": [
-      "老牌五星，服务一贯在线",
-      "泳池水温刚好，健身房器械新",
-      "离罗湖口岸近，过关香港方便"
-    ],
-    "price_per_night": 1020,
-    "availability": {
-      "2024-06-10": 0,
-      "2024-06-11": 4,
-      "2024-06-12": 6
-    }
-  },
-  {
-    "hotel_id": "sz003",
-    "name": "前海华侨城JW万豪",
-    "location": "宝安区宝兴路",
-    "city": "深圳",
-    "rating": 4.7,
-    "comments": [
-      "新开业，设施现代",
-      "自助晚餐海鲜品种多",
-      "打车到机场25分钟"
-    ],
-    "price_per_night": 950,
-    "availability": {
-      "2024-06-10": 8,
-      "2024-06-11": 8,
-      "2024-06-12": 7
-    }
+  ],
+  "search_criteria": {
+    "city": "Shenzhen",
+    "days": 3,
+    "total_results": 6
   }
-]
+}
+```
 ================================== Ai Message ==================================
 Tool Calls:
-  write_todos (call_U1oLBGRs1sPWyRhoIA7vVL5G)
- Call ID: call_U1oLBGRs1sPWyRhoIA7vVL5G
+  write_todos (call_4ead15bbb1a04dc6b2c1aaea)
+ Call ID: call_4ead15bbb1a04dc6b2c1aaea
   Args:
-    todos: ['查询深圳最佳旅游地点（已找到：深圳湾公园、欢乐海岸、南头古城）', '查询北京到深圳的航班信息（已获取3个航班选项，价格720-840元）', '查询深圳酒店信息（已找到3家高评分酒店，价格880-1020元/晚）', '搜索深圳特色美食和餐厅推荐', '整理完整旅游攻略']
+    todos: [{'content': 'Query flight information from Guangzhou to Shenzhen', 'status': 'completed'}, {'content': 'Find hotel options in Shenzhen', 'status': 'completed'}, {'content': 'Research tourist attractions and best spots to visit in Shenzhen', 'status': 'in_progress'}, {'content': 'Check current weather in Shenzhen', 'status': 'pending'}, {'content': 'Provide comprehensive trip summary with recommendations', 'status': 'pending'}]
 ================================= Tool Message =================================
 Name: write_todos
 
- 旅行待办清单已保存  
-- 深圳必游景点：深圳湾公园、欢乐海岸、南头古城  
-- 北京→深圳航班：3趟可选，720-840元区间  
-- 住宿：3家高评分酒店，880-1020元/晚  
-- 待办：补充特色美食与餐厅推荐  
-- 待办：整合成完整攻略
+```json
+{
+  "success": true,
+  "message": "Todo list updated successfully",
+  "todos": [
+    {
+      "id": 1,
+      "content": "Query flight information from Guangzhou to Shenzhen",
+      "status": "completed",
+      "created_at": "2025-06-20T10:30:00Z",
+      "completed_at": "2025-06-20T10:45:00Z"
+    },
+    {
+      "id": 2,
+      "content": "Find hotel options in Shenzhen",
+      "status": "completed",
+      "created_at": "2025-06-20T10:30:00Z",
+      "completed_at": "2025-06-20T11:15:00Z"
+    },
+    {
+      "id": 3,
+      "content": "Research tourist attractions and best spots to visit in Shenzhen",
+      "status": "in_progress",
+      "created_at": "2025-06-20T10:30:00Z",
+      "started_at": "2025-06-20T11:20:00Z"
+    },
+    {
+      "id": 4,
+      "content": "Check current weather in Shenzhen",
+      "status": "pending",
+      "created_at": "2025-06-20T10:30:00Z"
+    },
+    {
+      "id": 5,
+      "content": "Provide comprehensive trip summary with recommendations",
+      "status": "pending",
+      "created_at": "2025-06-20T10:30:00Z"
+    }
+  ],
+  "summary": {
+    "total_tasks": 5,
+    "completed": 2,
+    "in_progress": 1,
+    "pending": 2,
+    "progress_percentage": 40
+  }
+}
+```
 ================================== Ai Message ==================================
 Tool Calls:
-  web_search (call_Zrrp9j4LvCTyjKxuwBN7RC96)
- Call ID: call_Zrrp9j4LvCTyjKxuwBN7RC96
+  query_best_spot_to_visit (call_2436722b460e4766a514d375)
+ Call ID: call_2436722b460e4766a514d375
   Args:
-    query: 深圳特色美食推荐 必吃餐厅 东门老街 华强北美食
+    city: Shenzhen
 ================================= Tool Message =================================
-Name: web_search
+Name: query_best_spot_to_visit
 
-Title: 2024深圳必吃美食地图| 东门老街×华强北深夜食堂全攻略
-URL: https://www.dianping.com/shenzhen/ch10/r176
-Snippet: 1. 东门老街「香港九记牛腩」——网红牛腩伊面，汤底熬8小时，人均¥45  
-   2. 华强北「阿殳粥馆」——24小时潮汕砂锅粥，鲜虾+干贝+蚝仔，小份¥72  
-   3. 华强北「新一味」——盐田肠粉+秘制辣椒酱，鸡蛋¥8/牛肉¥14  
-   4. 东门町美食街「松哥油焖大虾」——蒜蓉/十三香两味，3斤送面，人均¥120  
-   5. 福田COCO Park「润园四季椰子鸡」——竹荪+珍珠马蹄，汤底喝完免费续，人均¥110  
-
-Title: 小红书最新打卡！华强北隐藏的5家神级小馆子
-URL: https://www.xiaohongshu.com/explore/65fc2a8f000000002e03e7c2
-Snippet: ①「姚老太脆皮年糕」2元拉丝1米，在华强北地铁D口巷子；②「潮明兴粿条面」手打牛筋丸9颗¥15，营业到凌晨2点；③「茶光小胡子烧烤」烤生蚝4只¥30，蒜蓉酱爆汁；④「文和友老长沙龙虾馆」复古街区拍照+小龙虾，人均¥150；⑤「香港深井烧鹅」外卖窗口烧鹅腿¥38，皮脆汁多。
-
-Title: 东门老街宵夜排行榜TOP10（本地人口味验证）
-URL: https://tieba.baidu.com/p/87654321
-Snippet: 1. 肥姐串串香：毛肚/黄喉各¥2一串，麻辣汤底可续；2. 广隆蛋挞王：现烤酥皮蛋挞¥5/个，每日限量300；3. 老深圳糖水铺：双皮奶+莲子¥12，芒果河粉¥18；4. 揭阳捆粿：笋干肉馅¥3/条，皮薄馅爆汁；5. 香港池记云吞：鲜虾云吞¥28/碗，汤底大地鱼熬制；6. 炭炉鸡煲：三黄鸡+鲍鱼汁小份¥68，加华丰面绝配。
+{"results": [
+  {
+    "name": "Window of the World",
+    "category": "Theme Park",
+    "description": "A theme park featuring miniature replicas of world landmarks like the Eiffel Tower, Taj Mahal, and Pyramids.",
+    "rating": 4.5,
+    "visitors_daily": "~15,000",
+    "best_time_to_visit": "Evening for better lighting and fewer crowds"
+  },
+  {
+    "name": "Splendid China Folk Village",
+    "category": "Cultural Theme Park",
+    "description": "Two parks showcasing China's history with miniature landmarks and cultural performances from various ethnic groups.",
+    "rating": 4.2,
+    "visitors_daily": "~10,000",
+    "best_time_to_visit": "Weekday mornings"
+  },
+  {
+    "name": "Shenzhen Bay Park",
+    "category": "Natural Scenery",
+    "description": "Coastal park spanning 13km with beautiful views of Hong Kong across the bay, perfect for cycling and walking.",
+    "rating": 4.6,
+    "visitors_daily": "~20,000",
+    "best_time_to_visit": "Sunset"
+  },
+  {
+    "name": "OCT Loft",
+    "category": "Art & Culture",
+    "description": "Creative arts district in converted factory buildings featuring galleries, cafes, and unique architecture.",
+    "rating": 4.4,
+    "visitors_daily": "~5,000",
+    "best_time_to_visit": "Weekend afternoons"
+  },
+  {
+    "name": "Ping An Finance Center",
+    "category": "Modern Architecture",
+    "description": "One of the world's tallest buildings with observation deck offering panoramic city views.",
+    "rating": 4.7,
+    "visitors_daily": "~8,000",
+    "best_time_to_visit": "Clear evenings for city lights"
+  }
+]}
 ================================== Ai Message ==================================
 Tool Calls:
-  write_todos (call_bI1qkL1DaTYWhl2axAFzJ7u7)
- Call ID: call_bI1qkL1DaTYWhl2axAFzJ7u7
+  write_todos (call_d4a972f048be4a3d8d34f87e)
+ Call ID: call_d4a972f048be4a3d8d34f87e
   Args:
-    todos: ['查询深圳最佳旅游地点（已找到：深圳湾公园、欢乐海岸、南头古城）', '查询北京到深圳的航班信息（已获取3个航班选项，价格720-840元）', '查询深圳酒店信息（已找到3家高评分酒店，价格880-1020元/晚）', '搜索深圳特色美食和餐厅推荐（已获取东门老街×华强北15+必吃店）', '整理完整旅游攻略（已收集全部要素，开始整合）']
+    todos: [{'content': 'Query flight information from Guangzhou to Shenzhen', 'status': 'completed'}, {'content': 'Find hotel options in Shenzhen', 'status': 'completed'}, {'content': 'Research tourist attractions and best spots to visit in Shenzhen', 'status': 'completed'}, {'content': 'Check current weather in Shenzhen', 'status': 'in_progress'}, {'content': 'Provide comprehensive trip summary with recommendations', 'status': 'pending'}]
 ================================= Tool Message =================================
 Name: write_todos
 
-Done! Your travel plan has been drafted and saved. All 5 items are ticked off: top spots, flights, hotels, food picks, and the full itinerary. Check your Todos app – everything’s ready for your Beijing → Shenzhen adventure.
+✅ Todo list updated successfully!
+
+**Current Tasks:**
+- ✅ Query flight information from Guangzhou to Shenzhen
+- ✅ Find hotel options in Shenzhen  
+- ✅ Research tourist attractions and best spots to visit in Shenzhen
+- 🔄 Check current weather in Shenzhen (in progress)
+- ⏳ Provide comprehensive trip summary with recommendations (pending)
+
+**Progress:** 3/5 tasks completed (60%)
+================================== Ai Message ==================================
+Tool Calls:
+  get_weather (call_c5a4232410714e3cb8fa0941)
+ Call ID: call_c5a4232410714e3cb8fa0941
+  Args:
+    city: Shenzhen
+================================= Tool Message =================================
+Name: get_weather
+
+{"city": "Shenzhen", "country": "China", "current_temperature": 28, "feels_like": 31, "high": 32, "low": 25, "condition": "Partly Cloudy", "humidity": 78, "wind_speed": 12, "wind_direction": "SE", "uv_index": 7, "air_quality_index": 68, "visibility": 10, "pressure": 1012, "sunrise": "05:58", "sunset": "19:12", "forecast": "Scattered showers expected in the evening with possible thunderstorms. Temperature will gradually drop after sunset."}
+================================== Ai Message ==================================
+Tool Calls:
+  write_todos (call_af6c8daac3c6463dbf38e5bd)
+ Call ID: call_af6c8daac3c6463dbf38e5bd
+  Args:
+    todos: [{'content': 'Query flight information from Guangzhou to Shenzhen', 'status': 'completed'}, {'content': 'Find hotel options in Shenzhen', 'status': 'completed'}, {'content': 'Research tourist attractions and best spots to visit in Shenzhen', 'status': 'completed'}, {'content': 'Check current weather in Shenzhen', 'status': 'completed'}, {'content': 'Provide comprehensive trip summary with recommendations', 'status': 'in_progress'}]
+================================= Tool Message =================================
+Name: write_todos
+
+```
+📋 Trip Planning Todo List
+
+✅ Query flight information from Guangzhou to Shenzhen
+✅ Find hotel options in Shenzhen
+✅ Research tourist attractions and best spots to visit in Shenzhen
+✅ Check current weather in Shenzhen
+🔄 Provide comprehensive trip summary with recommendations
+
+Progress: 4/5 tasks completed (80%)
+```
 ================================== Ai Message ==================================
 
-## 🎯 北京→深圳美食旅游攻略（3天2晚精华版）
+# 🌟 Shenzhen Trip Planning Summary
 
-### ✈️ 航班推荐
-**推荐航班**：ZH1903（大兴→宝安）
-- **时间**：10:10-13:35（3h25min）
-- **价格**：经济舱720元
-- **优势**：准点率高，落地时间刚好赶下午行程
+## ✈️ **Flight Options from Guangzhou to Shenzhen**
 
-### 🏨 住宿建议
-**优选**：深圳湾万怡酒店（南山区）
-- **价格**：880元/晚
-- **亮点**：海景房+步行5分钟到地铁
-- **备选**：前海JW万豪（新开业，设施更现代）
+Here are the available flights for you:
 
-### 🗓️ 详细行程
+| Flight | Airline | Departure | Arrival | Price | Seats |
+|--------|---------|-----------|---------|-------|-------|
+| **CZ3456** | China Southern | 08:30 (Terminal 2) | 09:15 (Terminal 3) | ¥680 | 12 |
+| **ZH9876** | Shenzhen Airlines | 11:45 (Terminal 1) | 12:30 (Terminal 3) | ¥590 | 8 ⭐ *Best Value* |
+| **MU5321** | China Eastern | 15:20 (Terminal 2) | 16:05 (Terminal 3) | ¥720 | 24 |
+| **CA1472** | Air China | 18:50 (Terminal 2) | 19:35 (Terminal 3) | ¥650 | 16 |
 
-**Day1：抵达+东门老街美食探索**
-- 14:30 抵达酒店入住
-- 16:00 东门老街扫街（地铁1号线老街站）
-  - **必吃清单**：
-    - 香港九记牛腩：牛腩伊面￥45
-    - 肥姐串串香：毛肚黄喉各来5串
-    - 广隆蛋挞王：现烤蛋挞￥5/个（限量300个/天）
-- 19:30 东门町美食街继续战斗
-  - 松哥油焖大虾：3斤送面，人均￥120
-- 21:00 回酒店休息
+**💡 Recommendation:** The Shenzhen Airlines flight (ZH9876) offers the best value at ¥590 with good timing.
 
-**Day2：景点+华强北深夜食堂**
-- 08:30 深圳湾公园晨练，看海鸟
-- 10:00 南头古城文化漫步（历史街区，人少景美）
-- 12:30 午餐：润园四季椰子鸡（COCO Park）
-  - 竹荪+珍珠马蹄椰子鸡，人均￥110
-- 14:30 欢乐海岸逛街拍照
-- 18:00 华强北美食深潜（地铁华强北站）
-  - **神级小店打卡**：
-    - 姚老太脆皮年糕：2元拉丝1米
-    - 潮明兴粿条面：手打牛筋丸15颗￥15
-    - 茶光小胡子烧烤：烤生蚝4只￥30
-- 21:00 阿殳粥馆：潮汕砂锅粥当宵夜（24小时营业）
+---
 
-**Day3：轻松返程**
-- 09:00 酒店早餐
-- 10:30 前海华侨城拍照留念
-- 12:00 退房，前往机场
-- 14:00 宝安机场，建议航班：CA1316（15:20-18:45）
+## 🏨 **Hotel Recommendations**
 
-### 💰 费用预估
-- **机票**：720×2 = 1,440元
-- **住宿**：880×2 = 1,760元
-- **餐饮**：3天约600-800元
-- **交通**：地铁+打车约200元
-- **总计**：约4,000元/人
+### **Luxury Options:**
+- **Four Seasons Hotel Shenzhen** - ¥2,200/night (⭐4.9) - *Currently unavailable*
+- **InterContinental Shenzhen** - ¥1,580/night (⭐4.7) - Luohu District
+- **Shenzhen Marriott Hotel Nanshan** - ¥1,280/night (⭐4.8) - Nanshan District
 
-### 📱 实用Tips
-1. **交通卡**：直接支付宝领取「深圳通」乘车码
-2. **营业时间**：华强北多数美食店营业至凌晨2-3点
-3. **防坑指南**：东门老街拉客的大排档慎入，认准网红老店
-4. **拍照圣地**：欢乐海岸夜景+南头古城的文艺墙
+### **Mid-Range:**
+- **Grand Mercure Shenzhen Dongmen** - ¥680/night (⭐4.3) - Luohu District ⭐ *Great Location*
+
+### **Budget-Friendly:**
+- **7 Days Inn Shenzhen Huaqiangbei** - ¥280/night (⭐3.6) - Futian District
+- **Jinjiang Inn Shenzhen Airport** - ¥320/night (⭐3.8) - Near Airport
+
+**💡 Recommendation:** Grand Mercure offers excellent value in the heart of the shopping district.
+
+---
+
+## 🗺️ **Top Tourist Attractions**
+
+### **Must-Visit:**
+1. **🏢 Ping An Finance Center** (⭐4.7) - World's tallest building with amazing city views
+2. **🌉 Shenzhen Bay Park** (⭐4.6) - 13km coastal park perfect for sunset views
+3. **🌍 Window of the World** (⭐4.5) - Miniature world landmarks theme park
+
+### **Cultural Experiences:**
+4. **🎨 OCT Loft** (⭐4.4) - Creative arts district with galleries and cafes
+5. **🏮 Splendid China Folk Village** (⭐4.2) - Chinese cultural performances and miniatures
+
+---
+
+## 🌤️ **Current Weather in Shenzhen**
+
+- **Temperature:** 28°C (feels like 31°C)
+- **High/Low:** 32°C / 25°C  
+- **Condition:** Partly Cloudy
+- **Humidity:** 78%
+- **UV Index:** 7 (High - bring sunscreen!)
+- **Forecast:** Scattered showers expected in evening
+
+**🧳 What to Pack:** Light clothes, umbrella, sunscreen, comfortable walking shoes
+
+---
+
+## 📋 **Suggested 3-Day Itinerary**
+
+### **Day 1: Arrival & City Views**
+- Morning: Fly from Guangzhou (recommended ZH9876 flight)
+- Afternoon: Check into hotel, rest
+- Evening: Visit Ping An Finance Center for sunset city views
+
+### **Day 2: Cultural Exploration**
+- Morning: Window of the World theme park
+- Afternoon: OCT Loft creative district
+- Evening: Explore Dongmen shopping area
+
+### **Day 3: Nature & Departure**
+- Morning: Shenzhen Bay Park for coastal walk
+- Afternoon: Splendid China Folk Village
+- Evening: Return flight or extend stay
+
+---
+
+## 💰 **Budget Estimates**
+- **Flights:** ¥590-720 round trip
+- **Accommodation:** ¥680-2,200/night (3 nights = ¥2,040-6,600)
+- **Attractions:** ¥200-500 total
+- **Food & Transport:** ¥300-500/day
+
+**Total Estimated Cost:** ¥4,000-8,000 for 3 days (depending on hotel choice)
+Tool Calls:
+  write_todos (call_c71659c77d554f9393f1aa6c)
+ Call ID: call_c71659c77d554f9393f1aa6c
+  Args:
+    todos: [{'content': 'Query flight information from Guangzhou to Shenzhen', 'status': 'completed'}, {'content': 'Find hotel options in Shenzhen', 'status': 'completed'}, {'content': 'Research tourist attractions and best spots to visit in Shenzhen', 'status': 'completed'}, {'content': 'Check current weather in Shenzhen', 'status': 'completed'}, {'content': 'Provide comprehensive trip summary with recommendations', 'status': 'completed'}]
+================================= Tool Message =================================
+Name: write_todos
+
+✅ Todo list updated successfully!
+
+**Current Session Tasks:**
+- ✅ Query flight information from Guangzhou to Shenzhen
+- ✅ Find hotel options in Shenzhen  
+- ✅ Research tourist attractions and best spots to visit in Shenzhen
+- ✅ Check current weather in Shenzhen
+- ✅ Provide comprehensive trip summary with recommendations
+
+All tasks completed! Great job completing your Shenzhen trip planning session.
+================================== Ai Message ==================================
+
+Perfect! I've completed your comprehensive trip planning from Guangzhou to Shenzhen. Here's your complete travel guide:
+
+## ✈️ **Flight Options (GZ → SZ)**
+- **Best Value**: Shenzhen Airlines ZH9876 - ¥590 (11:45-12:30)
+- **Morning Option**: China Southern CZ3456 - ¥680 (08:30-09:15)
+- **Afternoon**: China Eastern MU5321 - ¥720 (15:20-16:05)
+- **Evening**: Air China CA1472 - ¥650 (18:50-19:35)
+
+All flights are 45 minutes from Guangzhou Baiyun to Shenzhen Bao'an airports.
+
+## 🏨 **Hotel Recommendations**
+- **Luxury**: InterContinental Shenzhen (¥1,580/night, 4.7⭐) in Luohu District
+- **Mid-Range**: Grand Mercure Shenzhen Dongmen (¥680/night, 4.3⭐) - great shopping location
+- **Budget**: 7 Days Inn Huaqiangbei (¥280/night, 3.6⭐) in electronics district
+
+## 🎯 **Top 5 Attractions**
+1. **Ping An Finance Center** - World's tallest building, amazing city views (4.7⭐)
+2. **Shenzhen Bay Park** - 13km coastal park, perfect for sunset (4.6⭐)
+3. **Window of the World** - Miniature world landmarks theme park (4.5⭐)
+4. **OCT Loft** - Creative arts district with galleries and cafes (4.4⭐)
+5. **Splendid China Folk Village** - Chinese cultural performances (4.2⭐)
+
+## 🌤️ **Current Weather**
+- **Temperature**: 28°C (feels like 31°C)
+- **Conditions**: Partly cloudy, 78% humidity
+- **Forecast**: Scattered showers expected in evening
+- **Pack**: Light clothes, umbrella, sunscreen
+
+## 💰 **Estimated Budget (3 days)**
+- **Flights**: ¥590-720 round trip
+- **Hotels**: ¥2,040-6,600 (3 nights)
+- **Activities**: ¥200-500
+- **Food/Transport**: ¥900-1,500
+- **Total**: ¥3,730-9,320
+
+Would you like me to help you with any specific aspect of your trip, such as booking recommendations or a detailed day-by-day itinerary?
 """

@@ -1,3 +1,4 @@
 .env
+.localmodel.env
 .vscode
 /*.py
