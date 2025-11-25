@@ -92,3 +92,97 @@ if __name__ == "__main__":
     print(f"Final state - Pant: {state.get('pant_sizes', '')}")
     print(f"Final state - Material: {state.get('material_preference', '')}")
     print(f"Final state - Step: {state.get('current_step', '')}")
+
+"""
+================================ Human Message =================================
+
+hello, how are u?
+================================== Ai Message ==================================
+
+Hello! I'm doing great, thank you for asking! I'm excited to help you customize your perfect suit today.
+
+Let's start with the first step - what jacket size would you like? The available options are S, M, L, or XL.
+================================ Human Message =================================
+
+how about XL
+================================== Ai Message ==================================
+
+Perfect! XL jacket it is.
+
+Now for step 2 - what pant size would you like? The available options are 28, 30, 32, or 34.
+================================ Human Message =================================
+
+30 is enough, and i prefer silk on pants
+================================== Ai Message ==================================
+
+Great choice on pant size 30!
+
+I need to clarify something important about materials - the material you choose applies to the ENTIRE suit (both jacket and pants). So if you want silk, it will be silk for both the jacket AND the pants together. You can't have different materials for different pieces.
+
+So to confirm, would you like your complete suit (jacket and pants) to be made of silk?
+================================ Human Message =================================
+
+I think XL is not good , switch to L plz
+================================== Ai Message ==================================
+
+No problem! I'll update that to size L for the jacket.
+
+So we have:
+- Jacket: L
+- Pants: 30
+- Material: silk for the complete suit (both jacket and pants)
+
+Is this combination correct?
+================================ Human Message =================================
+
+No i mean in terms of jacket, i like cotton
+================================== Ai Message ==================================
+
+I understand you want to change the material choice! So let me clarify:
+
+You want:
+- Jacket: L
+- Pants: 30  
+- Material: cotton for the complete suit (both jacket and pants together)
+
+Is this correct?
+================================ Human Message =================================
+
+ok cotton for all
+================================== Ai Message ==================================
+
+Perfect! Let me confirm your complete suit customization:
+
+- Jacket: L
+- Pants: 30
+- Material: cotton (for the entire suit)
+
+Is this correct?
+================================ Human Message =================================
+
+yes that's correct
+================================== Ai Message ==================================
+Tool Calls:
+  save_all_info (save_all_info:0)
+ Call ID: save_all_info:0
+  Args:
+    jacket: L
+    pant: 30
+    material: cotton
+================================= Tool Message =================================
+Name: save_all_info
+
+Saved: Jacket L, Pants 30, Material cotton
+================================== Ai Message ==================================
+
+Excellent! Your suit customization has been saved:
+- Jacket: L
+- Pants: 30
+- Material: cotton
+
+Thank you for choosing our suit customization service! Is there anything else I can help you with today?
+Final state - Jacket: L
+Final state - Pant: 30
+Final state - Material: cotton
+Final state - Step: completed
+"""
