@@ -137,10 +137,12 @@ python single-file-agent-advanced/03-agent-customize-state-and-modify-via-tool-f
 langchain-in-10-lines/
 ├── 📁 single-file-agent/           # 基础学习路径 (13个文件)
 ├── 📁 single-file-agent-advanced/   # 高级功能 (4个文件)
-├── 📄 demo-*.py                     # Store功能演示
-├── 📄 optimized_middleware_example.py
-├── 📄 test_*.py                     # 测试文件
-├── 📄 middleware_analysis_report.md
+├── 📄 demo-*.py                     # Store功能演示 (5个文件)
+├── 📄 optimized_middleware_example.py # 中间件优化示例
+├── 📄 test_*.py                     # 测试文件 (4个文件)
+├── 📄 middleware_analysis_report.md # 性能分析报告
+├── 📄 .env.example                  # 环境变量示例
+├── 📄 .gitignore                    # Git忽略文件
 └── 📄 README.md                     # 本文件
 ```
 
@@ -178,7 +180,7 @@ langchain-in-10-lines/
 
 ## 📄 许可证
 
-MIT License - 详见 [LICENSE](LICENSE) 文件
+MIT License
 
 ## 🙏 致谢
 
