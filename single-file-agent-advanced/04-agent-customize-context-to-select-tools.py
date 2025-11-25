@@ -17,7 +17,7 @@ class CustomContext:
     session_id: str
     is_logged_in: bool
 
-# 3. tools
+# 3. define tools
 @tool
 def public_get_secret_num():
     """get secret number"""
@@ -42,10 +42,12 @@ agent = create_agent(
     model=llm,
     tools=[public_get_secret_num, private_get_secret_num],
     middleware=[tools_selector],
-    context_schema=CustomContext
+    context_schema=CustomContext, # * new: specify context
 )
 
 if __name__ == "__main__":
+    # CustomContext should be specified once, not modifiable like CustomState
+
     # context = CustomContext(session_id="s1",is_logged_in=False) # should get 3
     context = CustomContext(session_id="s2",is_logged_in=True) # should get 9
 

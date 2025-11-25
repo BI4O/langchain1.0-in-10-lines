@@ -20,11 +20,11 @@ def switch_model(request:ModelRequest, handler:Callable[[ModelRequest], ModelRes
     llm = large_llm if state["use_kimi_model"] else small_llm
     return handler(request.override(model=llm))
 
-# 4. define agent
+# 4. create agent
 agent = create_agent(
     model=small_llm,
     middleware=[switch_model],
-    state_schema=CustomState
+    state_schema=CustomState, # * new specify state
 )
 
 if __name__ == "__main__":
@@ -34,6 +34,10 @@ if __name__ == "__main__":
     # switch model
     state["use_kimi_model"]=True
     state["messages"].append("who model are u ?")
+    state = agent.invoke(state)
+
+    # model can read CustomState value, yet can't modify
+    state["messages"].append("who is the value of `use_kimi_model` now ?")
     state = agent.invoke(state)
 
     # check output
@@ -46,11 +50,17 @@ if __name__ == "__main__":
 hello, who model are u ?
 ================================== Ai Message ==================================
 
-Hello! I'm Qwen, a large-scale language model developed by Tongyi Lab. 
+Hello! I am Qwen, a large-scale language model independently developed by the Tongyi Lab under Alibaba Group. 
 ================================ Human Message =================================
 
 who model are u ?
 ================================== Ai Message ==================================
 
-I'm Kimi, a large language model trained by Moonshot AI.
+I’m Kimi, a large language model trained by Moonshot AI.
+================================ Human Message =================================
+
+who is the value of `use_kimi_model` now ?
+================================== Ai Message ==================================
+
+The value of `use_kimi_model` is `True` — so you’re talking to Kimi (Moonshot AI’s model), not Qwen.
 """
