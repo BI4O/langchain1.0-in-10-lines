@@ -67,13 +67,11 @@
 ```
 **核心收获**：掌握企业级应用的高级模式
 
-### 🏭 生产实践 (根目录)
+### 🏭 学习资源
 
 ```bash
-demo-*.py (5个文件)                    # 📦 Store功能演示
-optimized_middleware_example.py       # ⚡ 中间件优化示例
-test_*.py (4个文件)                    # 🧪 测试和验证
 middleware_analysis_report.md         # 📊 性能分析报告
+.env.example                            # 🔧 环境变量示例
 ```
 
 ## 🛠️ 环境准备
@@ -137,9 +135,6 @@ python single-file-agent-advanced/03-agent-customize-state-and-modify-via-tool-f
 langchain-in-10-lines/
 ├── 📁 single-file-agent/           # 基础学习路径 (13个文件)
 ├── 📁 single-file-agent-advanced/   # 高级功能 (4个文件)
-├── 📄 demo-*.py                     # Store功能演示 (5个文件)
-├── 📄 optimized_middleware_example.py # 中间件优化示例
-├── 📄 test_*.py                     # 测试文件 (4个文件)
 ├── 📄 middleware_analysis_report.md # 性能分析报告
 ├── 📄 .env.example                  # 环境变量示例
 ├── 📄 .gitignore                    # Git忽略文件
@@ -154,14 +149,14 @@ langchain-in-10-lines/
 3. 运行每个示例，观察输出结果
 
 ### 🚀 **进阶开发者路径**
-1. 先学习 `demo-*.py` 了解Store机制
-2. 研究 `optimized_middleware_example.py`
-3. 深入 `advanced` 目录的高级功能
+1. 阅读 `middleware_analysis_report.md` 了解性能考虑
+2. 深入 `advanced` 目录的高级功能
+3. 探索不同类型的状态管理和中间件模式
 
 ### 🏭 **生产环境准备**
-1. 阅读 `middleware_analysis_report.md`
-2. 运行 `test_*.py` 进行验证
-3. 基于类式中间件架构构建应用
+1. 阅读 `middleware_analysis_report.md` 了解性能考虑
+2. 基于 `12-agent-use-Middleware+AgentState-to-control-action(class-style).py` 架构构建应用
+3. 参考高级目录中的状态管理模式
 
 ## 🤝 贡献指南
 
