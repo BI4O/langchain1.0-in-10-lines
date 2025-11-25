@@ -13,9 +13,7 @@ load_dotenv()
 
 llm = ChatOpenAI(model="kimi-k2")
 
-# * new: context short-term memory
-# context is a v1.0 feature to introduce new short-term memory 
-# different from checkpointer/InMemorySaver, it's key-value struct
+# * new: 
 @dataclass
 class RuntimeContext():
     islogin: bool
