@@ -2,7 +2,7 @@ from langchain.agents import create_agent, AgentState
 from langchain_openai import ChatOpenAI
 from langchain.tools import tool, ToolRuntime
 from langgraph.types import Command
-from langchain_core.messages import ToolMessage, HumanMessage
+from langchain_core.messages import ToolMessage
 from dotenv import load_dotenv
 from typing import Optional, Literal
 
@@ -65,24 +65,24 @@ agent = create_agent(
 )
 
 if __name__ == "__main__":
-    state = agent.invoke({"messages": [HumanMessage(content="hello, how are u?")]})
+    state = agent.invoke({"messages": "hello, how are u?"})
 
-    state["messages"].append(HumanMessage(content="how about XL"))
+    state["messages"].append("how about XL")
     state = agent.invoke(state)
 
-    state["messages"].append(HumanMessage(content="30 is enough, and i prefer silk on pants"))
+    state["messages"].append("30 is enough, and i prefer silk on pants")
     state = agent.invoke(state)
 
-    state["messages"].append(HumanMessage(content="I think XL is not good , switch to L plz"))
+    state["messages"].append("I think XL is not good , switch to L plz")
     state = agent.invoke(state)
 
-    state["messages"].append(HumanMessage(content="No i mean in terms of jacket, i like cotton"))
+    state["messages"].append("No i mean in terms of jacket, i like cotton")
     state = agent.invoke(state)
 
-    state["messages"].append(HumanMessage(content="ok cotton for all"))
+    state["messages"].append("ok cotton for all")
     state = agent.invoke(state)
 
-    state["messages"].append(HumanMessage(content="yes that's correct"))
+    state["messages"].append("yes that's correct")
     state = agent.invoke(state)
 
     for msg in state["messages"]:

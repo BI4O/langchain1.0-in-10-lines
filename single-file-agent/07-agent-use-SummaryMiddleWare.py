@@ -13,7 +13,7 @@ llm = ChatOpenAI(model="kimi-k2")
 sum_mid = SummarizationMiddleware(
     model=llm,
     max_tokens_before_summary=400,   # when the total tokens exceed this, trigger summary
-    messages_to_keep=2,              # keep the last 2 messages in full
+    messages_to_keep=2,              # keep the lastest 2 messages in full
 )
 
 agent = create_agent(

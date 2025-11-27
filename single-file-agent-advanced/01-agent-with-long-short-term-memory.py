@@ -28,14 +28,14 @@ def get_user_name(runtime: ToolRuntime) -> str:
 short_mem_agent = create_agent(
     model=llm,
     system_prompt="""You are a helpful assistant.""",
-    checkpointer=InMemorySaver()
+    checkpointer=InMemorySaver() # * new: short-term memory saver
 )
 
 long_mem_agent = create_agent(
     model=llm,
     system_prompt="""You are a helpful assistant.""",
     tools=[save_user_name, get_user_name],
-    store=InMemoryStore()
+    store=InMemoryStore()        # * new: long-term memory storer
 )
 
 if __name__ == "__main__":

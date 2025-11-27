@@ -16,8 +16,8 @@ class CustomState(AgentState):
 # 3. define middleware
 @wrap_model_call
 def switch_model(request:ModelRequest, handler:Callable[[ModelRequest], ModelResponse]):
-    current_state = request.state
-    llm = large_llm if state["use_kimi_model"] else small_llm
+    current_state = request.state  # note：Must Init CustomState in run-code, or get "state" not found error !!!
+    llm = large_llm if state.get("use_kimi_model", False) else small_llm
     return handler(request.override(model=llm))
 
 # 4. create agent
@@ -32,11 +32,11 @@ if __name__ == "__main__":
     state = agent.invoke(state)
 
     # switch model
-    state["use_kimi_model"]=True
-    state["messages"].append("who model are u ?")
+    state["use_kimi_model"]=True  # hard code 
+    state["messages"].append("who model are u ?") # tricky way to use memory
     state = agent.invoke(state)
 
-    # model can read CustomState value, yet can't modify
+    # model can read CustomState value, yet can't modify it
     state["messages"].append("who is the value of `use_kimi_model` now ?")
     state = agent.invoke(state)
 
