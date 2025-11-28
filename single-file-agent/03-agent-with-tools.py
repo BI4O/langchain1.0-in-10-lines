@@ -1,7 +1,7 @@
 from langchain_openai import ChatOpenAI
 from langchain.agents import create_agent
 from dotenv import load_dotenv
-from langchain_core.tools import tool # * new: import tool decorator
+from langchain.tools import tool # * new: import tool decorator
 
 # set OPENAI_API_KEY、OPENAI_BASE_URL environment variables before running
 load_dotenv()

@@ -1,6 +1,6 @@
 from langchain.agents import create_agent
 from langchain_openai import ChatOpenAI
-from langchain_core.tools import tool
+from langchain.tools import tool
 from langgraph.runtime import get_runtime
 from dotenv import load_dotenv
 # * new: use context

@@ -2,7 +2,7 @@ from langchain.agents import create_agent, AgentState
 from langchain_openai import ChatOpenAI
 from langchain.tools import tool, ToolRuntime
 from langgraph.types import Command
-from langchain_core.messages import ToolMessage
+from langchain.messages import ToolMessage
 from dotenv import load_dotenv
 from typing import Optional, Literal
 
