@@ -40,3 +40,24 @@ if __name__ == "__main__":
             msg["messages"][-1].pretty_print()
 
     asyncio.run(main())
+
+"""
+================================ Human Message =================================
+
+What time is it in Tokyo right now?
+================================== Ai Message ==================================
+
+I'll check the current time in Tokyo for you.
+Tool Calls:
+  current_time (current_time:0)
+ Call ID: current_time:0
+  Args:
+    timezone: Asia/Tokyo
+================================= Tool Message =================================
+Name: current_time
+
+2025-12-03T12:52:13+09:00
+================================== Ai Message ==================================
+
+The current time in Tokyo is **12:52 PM** (12:52:13) on December 3, 2025. Tokyo is in the Japan Standard Time zone (UTC+9).
+"""

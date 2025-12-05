@@ -21,10 +21,10 @@ embed_llm = OpenAIEmbeddings(
     check_embedding_ctx_length=False,  # Must !!!
     chunk_size=5  # batch process documents 's embed and store
 )
-# 2. init store provider, use memory for demo
+# 2. define store provider, use memory for demo
 vector_store = InMemoryVectorStore(embed_llm)
 
-# 3.1 Load document
+# 3.1 define loader and load document
 bs4_strainer = bs4.SoupStrainer(class_=("post-title", "post-header", "post-content"))
 loader = WebBaseLoader(
     web_paths=("https://lilianweng.github.io/posts/2023-06-23-agent/",), # can add more here
@@ -34,7 +34,7 @@ docs = loader.load()
 assert len(docs) == 1
 print(f"Load doc total characters: {len(docs[0].page_content)}") # 43047
 
-# 3.2 split document(s)
+# 3.2 define spliter and split document(s)
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=2000,  # chunk size (characters)
     chunk_overlap=200,  # chunk overlap (characters)
@@ -43,7 +43,7 @@ text_splitter = RecursiveCharacterTextSplitter(
 all_splits = text_splitter.split_documents(docs)
 print(f"Split blog post into {len(all_splits)} sub-documents.") # 63
 
-# 3.3 model embed splited-docs and store
+# 3.3 take all solited-doc into vector
 document_ids = vector_store.add_documents(documents=all_splits)
 print(document_ids[:3])
 
@@ -51,7 +51,7 @@ print(document_ids[:3])
 @tool(response_format="content_and_artifact")
 def retrieve_context(query: str):
     """Retrieve information to help answer a query."""
-    retrieved_docs = vector_store.similarity_search(query, k=2)
+    retrieved_docs = vector_store.similarity_search(query, k=2) # retrive 2 most relevant chunk each call
     serialized = "\n\n".join(
         (f"Source: {doc.metadata}\nContent: {doc.page_content}")
         for doc in retrieved_docs

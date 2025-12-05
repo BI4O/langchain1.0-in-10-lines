@@ -2,3 +2,17 @@
 .localmodel.env
 .vscode
 __pycache__/
+
+# Python virtual environments
+.venv/
+venv/
+env/
+
+# macOS
+.DS_Store
+
+# Database directories
+chroma_db/
+
+# UV lock file (optional, remove if you want to track dependencies)
+uv.lock
