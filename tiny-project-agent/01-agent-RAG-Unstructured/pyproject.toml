@@ -1,0 +1,20 @@
+[project]
+name = "01-agent-rag-unstructured"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "docling>=2.64.0",
+    "langchain>=1.1.0",
+    "langchain-chroma>=1.0.0",
+    "langchain-docling>=2.0.0",
+    "langchain-openai>=1.1.0",
+    "langchain-text-splitters>=1.0.0",
+    "numpy>=2.1.0",
+    "python-dotenv>=1.2.1",
+    "requests>=2.32.5",
+    "torch>=2.5.0",
+    "torchvision>=0.20.0",
+    "transformers>=4.57.3",
+]
