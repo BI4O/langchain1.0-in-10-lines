@@ -1,189 +1,55 @@
 # LangChain 1.0 in 10 Lines
 
-> 🚀 **极简代码，深度学习** - 用最少的代码掌握LangChain 1.0的核心功能
+极简代码学习LangChain 1.0核心功能，每个文件演示一个具体概念。
 
-## 📖 项目简介
+## 快速开始
 
-这是一个专注于LangChain 1.0的极简实用教程仓库。每个文件都用10-20行核心代码演示一个具体功能，让你快速掌握现代Agent开发的核心概念。
-
-## 🎯 学习目标
-
-- ✅ **快速上手**：从零开始，渐进式学习
-- ✅ **实用导向**：所有示例都可直接运行
-- ✅ **最佳实践**：展示生产级的开发模式
-- ✅ **深度理解**：掌握底层原理和设计思想
-
-## 🗺️ 学习路径
-
-### 🌱 基础入门 (`/single-file-agent`)
-
-按数字顺序学习，每个文件只引入一个新概念：
-
-#### **第一阶段：Agent基础 (00-02)**
+### 1. 环境准备
 ```bash
-00-agent-with-nothing.py          # 🎯 最简单的Agent
-01-agent-streaming.py            # 📡 流式输出
-02-agent-structure-output.py     # 📋 结构化输出
-```
-**核心收获**：理解Agent基本概念和通信方式
-
-#### **第二阶段：工具集成 (03-05)**
-```bash
-03-agent-with-tools.py           # 🔧 基础工具使用
-04-agent-with-tools-and-docs.py  # 📚 工具与文档
-05-agent-with-mcp-tools.py       # 🔌 MCP工具集成
-```
-**核心收获**：掌握工具使用和外部系统集成
-
-#### **第三阶段：记忆管理 (06)**
-```bash
-06-agent-with-short-memory.py    # 🧠 短期记忆
-```
-**核心收获**：理解对话历史和状态管理
-
-#### **第四阶段：中间件入门 (07-09)**
-```bash
-07-agent-use-SummaryMiddleWare.py        # 📝 摘要中间件
-08-agent-use-dynamic-prompt-Middleware.py # 🔄 动态提示中间件
-09-agent-use-TodoListMiddleware.py       # ✅ 待办事项中间件
-```
-**核心收获**：掌握中间件的基本使用模式
-
-#### **第五阶段：自定义中间件 (10-12)**
-```bash
-10-agent-create-new-middleware-to-monitor.py                    # 📊 监控中间件
-11-agent-use-Middleware+AgentState-to-control-action.py       # 🎮 函数式状态控制
-12-agent-use-Middleware+AgentState-to-control-action(class-style).py # 🏗️ 类式中间件
-```
-**核心收获**：学会创建复杂的自定义中间件
-
-### 🚀 高级进阶 (`/single-file-agent-advanced`)
-
-```bash
-01-agent-with-long-short-term-memory.py     # 🕰️ 长短期记忆对比
-02-agent-customize-state-and-modify-via-hardcode-to-switch-llm.py # 🔄 动态模型切换
-03-agent-customize-state-and-modify-via-tool-for-task-guidance.py # 📋 任务驱动引导
-04-agent-customize-context-to-select-tools.py # 🎯 上下文工具选择
-```
-**核心收获**：掌握企业级应用的高级模式
-
-### 🏭 学习资源
-
-```bash
-middleware_analysis_report.md         # 📊 性能分析报告
-.env.example                            # 🔧 环境变量示例
-```
-
-## 🛠️ 环境准备
-
-### 依赖安装
-```bash
+# 安装依赖
 pip install langchain langchain-openai langgraph python-dotenv
+
+# 配置环境变量
+cp .env.example .env
+# 编辑 .env 文件，填入你的API配置
 ```
 
-### 环境配置
-创建 `.env` 文件：
+### 2. 运行示例
+
+#### 基础学习 (single-file-agent)
 ```bash
-OPENAI_API_KEY=your_api_key_here
-# 或者使用其他兼容的API
+# 按数字顺序学习
+python single-file-agent/00-agent-with-nothing.py          # 最简单的Agent
+python single-file-agent/01-agent-streaming.py            # 流式输出
+python single-file-agent/02-agent-structure-output.py     # 结构化输出
+python single-file-agent/03-agent-with-tools.py           # 工具使用
+python single-file-agent/06-agent-with-short-memory.py    # 记忆管理
 ```
 
-## 🚀 快速开始
-
-### 1. 运行第一个Agent
+#### 高级功能 (single-file-agent-advanced)
 ```bash
-python single-file-agent/00-agent-with-nothing.py
+python single-file-agent-advanced/01-agent-with-long-short-term-memory.py
 ```
 
-### 2. 体验工具集成
+#### 完整项目 (tiny-project-agent)
 ```bash
-python single-file-agent/03-agent-with-tools.py
+cd tiny-project-agent/01-agent-RAG-Unstructured
+cp .env.example .env
+# 编辑 .env 配置API
+uv sync
+uv run python main.py
 ```
 
-### 3. 探索高级功能
-```bash
-python single-file-agent-advanced/03-agent-customize-state-and-modify-via-tool-for-task-guidance.py
-```
+## 项目结构
 
-## 💡 核心特色
+- `single-file-agent/` - 基础学习示例 (按00-12顺序学习)
+- `single-file-agent-advanced/` - 高级功能示例
+- `tiny-project-agent/` - 完整的RAG项目
 
-### 🎯 **极简代码原则**
-- 每个文件10-20行核心代码
-- 去除所有冗余，专注核心概念
-- 一个文件，一个知识点
+## 学习路径
 
-### 📚 **渐进式学习**
-- 从00到12的数字递进
-- 每步都有明确的学习目标
-- 理论与实践完美结合
+1. **初学者**: 按 `00→12` 顺序学习基础示例
+2. **进阶**: 探索 `advanced` 目录的高级功能
+3. **实战**: 运行 `tiny-project-agent` 中的RAG项目
 
-### 🏗️ **最佳实践**
-- 展示企业级开发模式
-- 包含性能优化考虑
-- 提供生产环境参考
-
-## 🔧 技术栈
-
-- **LangChain 1.0** - Agent创建和管理
-- **LangGraph** - 图状态管理和存储
-- **LangChain OpenAI** - 模型集成
-- **Python 3.8+** - 开发语言
-
-## 📂 项目结构
-
-```
-langchain-in-10-lines/
-├── 📁 single-file-agent/           # 基础学习路径 (13个文件)
-├── 📁 single-file-agent-advanced/   # 高级功能 (4个文件)
-├── 📄 middleware_analysis_report.md # 性能分析报告
-├── 📄 .env.example                  # 环境变量示例
-├── 📄 .gitignore                    # Git忽略文件
-└── 📄 README.md                     # 本文件
-```
-
-## 🎓 学习建议
-
-### 🌱 **初学者路径**
-1. 按顺序学习 `00-12`
-2. 重点理解 `03, 06, 07, 10` 四个关键文件
-3. 运行每个示例，观察输出结果
-
-### 🚀 **进阶开发者路径**
-1. 阅读 `middleware_analysis_report.md` 了解性能考虑
-2. 深入 `advanced` 目录的高级功能
-3. 探索不同类型的状态管理和中间件模式
-
-### 🏭 **生产环境准备**
-1. 阅读 `middleware_analysis_report.md` 了解性能考虑
-2. 基于 `12-agent-use-Middleware+AgentState-to-control-action(class-style).py` 架构构建应用
-3. 参考高级目录中的状态管理模式
-
-## 🤝 贡献指南
-
-欢迎提交Issue和Pull Request！
-
-### 开发规范
-- 保持极简代码风格
-- 每个文件专注一个功能点
-- 添加清晰的注释和文档
-
-### 提交流程
-1. Fork 本仓库
-2. 创建特性分支
-3. 提交更改
-4. 发起 Pull Request
-
-## 📄 许可证
-
-MIT License
-
-## 🙏 致谢
-
-感谢 LangChain 团队的优秀工作，让Agent开发变得如此简单！
-
----
-
-<div align="center">
-  <p>用最少的代码，学最深的道理 🚀</p>
-  <p>Made with ❤️ by <a href="https://github.com/BI4O">BI4O</a></p>
-</div>
+每个文件专注一个功能点，代码极简，开箱即用。
