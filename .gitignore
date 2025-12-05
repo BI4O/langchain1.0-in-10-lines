@@ -13,3 +13,7 @@ env/
 
 # Database directories
 chroma_db/
+
+# LangGraph cache
+.langgraph_api/
+__pycache__/
