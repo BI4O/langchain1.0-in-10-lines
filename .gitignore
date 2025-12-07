@@ -17,3 +17,6 @@ chroma_db/
 # LangGraph cache
 .langgraph_api/
 __pycache__/
+
+# node packages
+node_modules/
