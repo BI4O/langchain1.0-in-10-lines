@@ -1,0 +1,9 @@
+{
+    "dependencies": [
+        "."
+    ],
+    "graphs": {
+        "agent": "single-file-agent-langgraph/07-tools-llm.py:agent"
+    },
+    "env": ".env"
+}
