@@ -3,7 +3,7 @@
         "."
     ],
     "graphs": {
-        "agent": "single-file-agent-langgraph/07-tools-llm.py:agent"
+        "agent": "single-file-agent-langgraph/08-parallel-llms.py:agent"
     },
     "env": ".env"
 }
