@@ -3,7 +3,7 @@
         "."
     ],
     "graphs": {
-        "agent": "single-file-agent-langgraph/09-plan-execu-parallel.py:agent"
+        "agent": "single-file-agent-langgraph/09-MapReduce-Agent.py:agent"
     },
     "env": ".env"
 }
